@@ -37,3 +37,28 @@ Stage Summary:
 - Faza 1 (5-7 dni): ChitraLekhan + before-after-slider + generative-ai-kmp
 - Faza 2 (7-12 dni): RAL razširitev + ARCore začetek
 - Faza 3 (10-15 dni): Polna AR vizualizacija z 3D modeli
+
+---
+Task ID: 3-7
+Agent: Main Agent
+Task: Integriraj združljive knjižnice v projekt Monter Ograj PRO
+
+Work Log:
+- Kloniral 4 knjižnice: ChitraLekhan, before-after-slider, colorpicker-compose, generative-ai-kmp
+- Raziskal Maven koordinate in API vseh knjižnic
+- Posodobil libs.versions.toml z novimi odvisnostmi
+- Posodobil app/build.gradle.kts z novimi implementacijami
+- Dodal JitPack repozitorij v settings.gradle.kts
+- Zamenjal GeminiClient.kt z generative-ai-kmp SDK (~177 vrstic → ~100 vrstic, manj kode)
+- Posodobil Models.kt z novimi polji: photoPaths, workStartTime, workEndTime, pdfOfferPath, RalColor, WorkSession, OfferLineItem
+- Ustvaril RalColorPicker.kt z razširjeno RAL paleto (27 barv + kategorije)
+- Ustvaril OfferPdfGenerator.kt z iText7 za PDF ponudbe
+- Dodal nov tab "Ponudba PDF" v DashboardScreen
+- Dodal OfferPdfTab composable z generiranjem PDF in predogledom cene
+
+Stage Summary:
+- 6 novih knjižnic dodanih v Gradle: ChitraLekhan, before-after-slider, colorpicker-compose, generative-ai-kmp, iText7, material-icons-extended
+- GeminiClient zamenjan s professionalnim SDK (manj kode, manj napak)
+- RAL paleta razširjena s 7 na 27 barv + kategorizacija
+- PDF ponudbe funkcionalnost dodana (iText7)
+- Novi podatkovni modeli za več slik, evidenco časa, ponudbe
