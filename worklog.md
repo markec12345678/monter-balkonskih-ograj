@@ -106,3 +106,36 @@ Priority 1 features from ROKSAL Kranj analysis: WPC WoodCore product system, sub
 - ✅ Webpack build successful (Turbopack has nanoid/non-secure compatibility issue)
 - ✅ Dev server running on port 3000
 - ✅ All routes responding
+
+---
+
+## Task 6: Priority 2 Features - Material Calculator & Quick Quote
+**Date**: 2026-06-06
+**Status**: ✅ Complete
+
+### What was implemented
+Priority 2 features: Material calculator with automatic quantity computation, real-time promotional pricing, quick quote without project, and ROKSAL inquiry integration.
+
+### Files Created (2 new components)
+1. `src/components/material-calculator.tsx` - Full material BOM calculator
+   - Stebrički (vogalni + vmesni + stranski), podstavki, WPC letve, nosilci, pokrovi, sidra, vijaki, tesnila
+   - Akcijske cene: -30% na 2.2m plošče, -15% na 4m plošče
+   - Copy-to-clipboard za seznam materiala
+2. `src/components/quick-quote.tsx` - Quick quote without project creation
+   - Instant price estimate z DDV (9.5%/22%)
+   - mailto: info@roksal.com z avtomatskim povpraševanjem
+   - Direkten kontakt ROKSAL (telefon, email, web)
+
+### Files Modified
+1. `src/app/page.tsx` - 3-tab sidebar (Projekti / Material / Hitra ponudba)
+   - Left sidebar with tool tabs
+   - Empty state with shortcuts to tools
+   - All modals preserved (Priročnik, Podizvajalec, Katalog)
+
+### Key Material Calculator Logic
+- Post count: cornerPosts + ceil(length/150-1) + ceil(width/150-1)*2
+- Board count: ceil(height/(boardWidth+gap)) × segments
+- Board discount: 2.2m→-30%, 4m→-15%
+- Support brackets: ceil(runLength/100+1) × boardsPerSegment × segments
+- Anchors: 2 per post (v-tla), 4 per post (bočno)
+- All prices per item with total and notes
