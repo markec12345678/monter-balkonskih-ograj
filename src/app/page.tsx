@@ -12,9 +12,21 @@ import { ProjectDetail } from '@/components/project-detail';
 import { RoksalCatalog } from '@/components/roksal-catalog';
 import { SubcontractorForm } from '@/components/subcontractor-form';
 import { InstallationManual } from '@/components/installation-manual';
+import { MaterialCalculator } from '@/components/material-calculator';
+import { QuickQuote } from '@/components/quick-quote';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, UserPlus, Wrench } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  BookOpen,
+  UserPlus,
+  Wrench,
+  Calculator,
+  Zap,
+  FolderOpen,
+} from 'lucide-react';
+
+type RightPanel = 'projects' | 'material' | 'quickquote';
 
 export default function HomePage() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -23,6 +35,7 @@ export default function HomePage() {
   const [subcontractorOpen, setSubcontractorOpen] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
+  const [rightPanel, setRightPanel] = useState<RightPanel>('projects');
 
   const loadProjects = useCallback(async () => {
     const all = await getAllProjects();
@@ -33,7 +46,7 @@ export default function HomePage() {
     let mounted = true;
     getAllProjects().then((all) => {
       if (mounted) setProjects(all);
-    });
+    }).catch(() => {});
     return () => { mounted = false; };
   }, []);
 
@@ -63,6 +76,7 @@ export default function HomePage() {
     await loadProjects();
     setSelectedId(created.id);
     setShowDetail(true);
+    setRightPanel('projects');
   }
 
   async function handleUpdate(updated: Project) {
@@ -73,6 +87,7 @@ export default function HomePage() {
   function handleSelect(id: number) {
     setSelectedId(id);
     setShowDetail(true);
+    setRightPanel('projects');
   }
 
   function handleBack() {
@@ -128,29 +143,72 @@ export default function HomePage() {
 
       {/* Main content: master-detail */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Project list - sidebar on desktop */}
-        <div
-          className={`w-full lg:w-[35%] lg:min-w-[320px] lg:max-w-[420px] border-r border-white/5 bg-card/30 ${
-            showDetail ? 'hidden lg:flex lg:flex-col' : 'flex flex-col'
-          }`}
-        >
-          <ProjectList
-            projects={projects}
-            selectedId={selectedId}
-            onSelect={handleSelect}
-            onAdd={handleAdd}
-            totalMeters={totalMeters}
-            activeCount={activeCount}
-          />
+        {/* Left sidebar: Project list + Tools navigation */}
+        <div className="w-full lg:w-[35%] lg:min-w-[320px] lg:max-w-[420px] border-r border-white/5 bg-card/30 flex flex-col">
+          {/* Tool tabs */}
+          <div className="flex border-b border-white/5">
+            <button
+              onClick={() => { setRightPanel('projects'); setShowDetail(false); }}
+              className={`flex-1 py-2 text-[10px] font-medium flex items-center justify-center gap-1 transition-colors ${
+                rightPanel === 'projects'
+                  ? 'text-amber-400 border-b-2 border-amber-500'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <FolderOpen className="w-3 h-3" />
+              Projekti
+            </button>
+            <button
+              onClick={() => { setRightPanel('material'); setShowDetail(false); }}
+              className={`flex-1 py-2 text-[10px] font-medium flex items-center justify-center gap-1 transition-colors ${
+                rightPanel === 'material'
+                  ? 'text-amber-400 border-b-2 border-amber-500'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Calculator className="w-3 h-3" />
+              Material
+            </button>
+            <button
+              onClick={() => { setRightPanel('quickquote'); setShowDetail(false); }}
+              className={`flex-1 py-2 text-[10px] font-medium flex items-center justify-center gap-1 transition-colors ${
+                rightPanel === 'quickquote'
+                  ? 'text-amber-400 border-b-2 border-amber-500'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Zap className="w-3 h-3" />
+              Hitra ponudba
+            </button>
+          </div>
+
+          {/* Panel content */}
+          {rightPanel === 'projects' ? (
+            <ProjectList
+              projects={projects}
+              selectedId={selectedId}
+              onSelect={handleSelect}
+              onAdd={handleAdd}
+              totalMeters={totalMeters}
+              activeCount={activeCount}
+            />
+          ) : (
+            <ScrollArea className="flex-1">
+              <div className="p-3">
+                {rightPanel === 'material' && <MaterialCalculator />}
+                {rightPanel === 'quickquote' && <QuickQuote />}
+              </div>
+            </ScrollArea>
+          )}
         </div>
 
         {/* Detail workspace */}
         <div
           className={`flex-1 ${
-            showDetail ? 'flex flex-col' : 'hidden lg:flex lg:flex-col'
+            showDetail && rightPanel === 'projects' ? 'flex flex-col' : 'hidden lg:flex lg:flex-col'
           }`}
         >
-          {selectedProject ? (
+          {selectedProject && rightPanel === 'projects' ? (
             <ProjectDetail
               key={selectedProject.id}
               project={selectedProject}
@@ -164,7 +222,27 @@ export default function HomePage() {
                   <span className="text-2xl">🏗️</span>
                 </div>
                 <p className="text-sm font-medium">Izberite projekt</p>
-                <p className="text-xs mt-1">ali ustvarite novega z gumbom &quot;Nov projekt&quot;</p>
+                <p className="text-xs mt-1">ali uporabite orodja v levem meniju</p>
+                <div className="flex gap-2 mt-4 justify-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setRightPanel('material')}
+                    className="h-8 text-xs"
+                  >
+                    <Calculator className="w-3.5 h-3.5 mr-1.5" />
+                    Materialni kalkulator
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setRightPanel('quickquote')}
+                    className="h-8 text-xs"
+                  >
+                    <Zap className="w-3.5 h-3.5 mr-1.5" />
+                    Hitra ponudba
+                  </Button>
+                </div>
               </div>
             </div>
           )}
