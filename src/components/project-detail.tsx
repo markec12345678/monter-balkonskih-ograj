@@ -4,32 +4,35 @@ import React, { useState } from 'react';
 import {
   Project,
   RAILING_STYLES,
+  WPC_COLORS,
+  WPC_PROFILES,
   DEFAULT_PROJECT,
   MountType,
   RailingStyle,
+  WpcProfile,
   calculatePrice,
+  INSTALLATION_SPECS,
 } from '@/lib/types';
 import { RALColorPicker } from '@/components/ral-color-picker';
+import { WpcColorPicker } from '@/components/wpc-color-picker';
 import { PriceCalculator } from '@/components/price-calculator';
 import { SketchCanvas } from '@/components/sketch-canvas';
 import { BeforeAfterSlider } from '@/components/before-after-slider';
 import { PdfGenerator } from '@/components/pdf-generator';
+import { ReferenceGallery } from '@/components/reference-gallery';
+import { WarrantyCertificate } from '@/components/warranty-certificate';
 import { RAL_BALCONY_COLORS } from '@/lib/ral-colors';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
-import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   ArrowLeft,
-  Save,
-  CheckCircle2,
-  Circle,
   Ruler,
   Pencil,
   Bot,
@@ -37,6 +40,8 @@ import {
   Loader2,
   Copy,
   Check,
+  Shield,
+  Camera,
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { DrawingStroke, CalibrationData } from '@/lib/types';
@@ -52,6 +57,7 @@ export function ProjectDetail({ project, onUpdate, onBack }: ProjectDetailProps)
   const [aiLoading, setAiLoading] = useState(false);
   const [aiReport, setAiReport] = useState(project.aiReport || '');
   const [copied, setCopied] = useState(false);
+  const [warrantyOpen, setWarrantyOpen] = useState(false);
 
   const breakdown = calculatePrice(project);
 
@@ -62,12 +68,6 @@ export function ProjectDetail({ project, onUpdate, onBack }: ProjectDetailProps)
   function updateMultiple(fields: Partial<Project>) {
     onUpdate({ ...project, ...fields });
   }
-
-  // Material filter for railing styles
-  const [materialFilter, setMaterialFilter] = useState<string>('Vse');
-  const filteredStyles = RAILING_STYLES.filter(
-    (s) => materialFilter === 'Vse' || s.material === materialFilter
-  );
 
   async function handleAiAnalysis() {
     setAiLoading(true);
@@ -83,7 +83,7 @@ export function ProjectDetail({ project, onUpdate, onBack }: ProjectDetailProps)
           height: project.heightCm,
           width: project.widthCm,
           mountType: project.mountType,
-          color: project.ralColorName || project.ralColor,
+          color: project.wpcColorName || project.ralColorName,
           notes: project.notes,
           imageBase64: project.photoBase64,
         }),
@@ -133,51 +133,55 @@ export function ProjectDetail({ project, onUpdate, onBack }: ProjectDetailProps)
           }
           className={`h-8 ${project.status !== 'active' ? 'bg-amber-600 hover:bg-amber-700 text-white' : ''}`}
         >
-          {project.status === 'active' ? (
-            <>
-              <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-              Zaključi
-            </>
-          ) : (
-            <>
-              <Circle className="w-3.5 h-3.5 mr-1" />
-              Odpri
-            </>
-          )}
+          {project.status === 'active' ? 'Zaključi' : 'Odpri'}
         </Button>
       </div>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        <div className="border-b border-white/5 px-3">
-          <TabsList className="bg-transparent h-auto p-0 gap-1">
+        <div className="border-b border-white/5 px-2">
+          <TabsList className="bg-transparent h-auto p-0 gap-0.5 overflow-x-auto">
             <TabsTrigger
               value="podatki"
-              className="data-[state=active]:bg-amber-600/20 data-[state=active]:text-amber-400 rounded-lg px-3 py-2 text-xs"
+              className="data-[state=active]:bg-amber-600/20 data-[state=active]:text-amber-400 rounded-lg px-2.5 py-2 text-[11px] whitespace-nowrap"
             >
-              <Ruler className="w-3.5 h-3.5 mr-1.5" />
+              <Ruler className="w-3 h-3 mr-1" />
               Podatki
             </TabsTrigger>
             <TabsTrigger
               value="skica"
-              className="data-[state=active]:bg-amber-600/20 data-[state=active]:text-amber-400 rounded-lg px-3 py-2 text-xs"
+              className="data-[state=active]:bg-amber-600/20 data-[state=active]:text-amber-400 rounded-lg px-2.5 py-2 text-[11px] whitespace-nowrap"
             >
-              <Pencil className="w-3.5 h-3.5 mr-1.5" />
-              Skiciranje
+              <Pencil className="w-3 h-3 mr-1" />
+              Skica
+            </TabsTrigger>
+            <TabsTrigger
+              value="fotke"
+              className="data-[state=active]:bg-amber-600/20 data-[state=active]:text-amber-400 rounded-lg px-2.5 py-2 text-[11px] whitespace-nowrap"
+            >
+              <Camera className="w-3 h-3 mr-1" />
+              Foto
             </TabsTrigger>
             <TabsTrigger
               value="ai"
-              className="data-[state=active]:bg-amber-600/20 data-[state=active]:text-amber-400 rounded-lg px-3 py-2 text-xs"
+              className="data-[state=active]:bg-amber-600/20 data-[state=active]:text-amber-400 rounded-lg px-2.5 py-2 text-[11px] whitespace-nowrap"
             >
-              <Bot className="w-3.5 h-3.5 mr-1.5" />
-              AI Poročilo
+              <Bot className="w-3 h-3 mr-1" />
+              AI
             </TabsTrigger>
             <TabsTrigger
               value="pdf"
-              className="data-[state=active]:bg-amber-600/20 data-[state=active]:text-amber-400 rounded-lg px-3 py-2 text-xs"
+              className="data-[state=active]:bg-amber-600/20 data-[state=active]:text-amber-400 rounded-lg px-2.5 py-2 text-[11px] whitespace-nowrap"
             >
-              <FileText className="w-3.5 h-3.5 mr-1.5" />
+              <FileText className="w-3 h-3 mr-1" />
               Ponudba
+            </TabsTrigger>
+            <TabsTrigger
+              value="garancija"
+              className="data-[state=active]:bg-amber-600/20 data-[state=active]:text-amber-400 rounded-lg px-2.5 py-2 text-[11px] whitespace-nowrap"
+            >
+              <Shield className="w-3 h-3 mr-1" />
+              Garancija
             </TabsTrigger>
           </TabsList>
         </div>
@@ -272,12 +276,12 @@ export function ProjectDetail({ project, onUpdate, onBack }: ProjectDetailProps)
                 <CardTitle className="text-sm">Način montaže</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex gap-2">
-                  {(['V tla (Zgoraj)', 'Bočno (V fasado)'] as MountType[]).map((mt) => (
+                <div className="grid grid-cols-2 gap-2">
+                  {(['V tla (Zgoraj)', 'Bočno (V fasado)', 'Vogalni steber', 'Na stopnice'] as MountType[]).map((mt) => (
                     <button
                       key={mt}
                       onClick={() => updateField('mountType', mt)}
-                      className={`flex-1 py-3 px-3 rounded-lg border text-sm font-medium transition-all ${
+                      className={`py-2.5 px-3 rounded-lg border text-xs font-medium transition-all ${
                         project.mountType === mt
                           ? 'border-amber-500 bg-amber-600/20 text-amber-400'
                           : 'border-white/10 hover:border-white/20 text-muted-foreground'
@@ -293,52 +297,56 @@ export function ProjectDetail({ project, onUpdate, onBack }: ProjectDetailProps)
             {/* Railing style */}
             <Card className="border-white/5">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm">Stil ograje</CardTitle>
+                <CardTitle className="text-sm">WPC Sistem ograje</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex flex-wrap gap-1.5">
-                  {['Vse', 'Inox', 'Steklo', 'Alu', 'Kovina'].map((f) => (
-                    <button
-                      key={f}
-                      onClick={() => setMaterialFilter(f)}
-                      className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
-                        materialFilter === f
-                          ? 'bg-amber-600 text-white'
-                          : 'bg-muted text-muted-foreground'
-                      }`}
-                    >
-                      {f}
-                    </button>
-                  ))}
-                </div>
-                <div className="space-y-2">
-                  {filteredStyles.map((style) => (
-                    <button
-                      key={style.id}
-                      onClick={() => updateField('railingStyle', style.id as RailingStyle)}
-                      className={`w-full text-left p-3 rounded-lg border transition-all ${
-                        project.railingStyle === style.id
-                          ? 'border-amber-500 bg-amber-600/10'
-                          : 'border-white/5 hover:border-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium text-sm">{style.name}</div>
-                          <div className="text-xs text-muted-foreground">{style.description}</div>
-                        </div>
-                        <span className="text-amber-400 font-bold text-sm">{style.pricePerMeter} €/m</span>
+              <CardContent className="space-y-2">
+                {RAILING_STYLES.map((style) => (
+                  <button
+                    key={style.id}
+                    onClick={() => updateField('railingStyle', style.id as RailingStyle)}
+                    className={`w-full text-left p-3 rounded-lg border transition-all ${
+                      project.railingStyle === style.id
+                        ? 'border-amber-500 bg-amber-600/10'
+                        : 'border-white/5 hover:border-white/10'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-medium text-sm">{style.name}</div>
+                        <div className="text-[10px] text-muted-foreground">{style.description}</div>
                       </div>
-                    </button>
-                  ))}
-                </div>
+                      <div className="text-right">
+                        <span className="text-amber-400 font-bold text-sm">{style.pricePerM2} €/m²</span>
+                        <div className="text-[10px] text-muted-foreground">{style.material}</div>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </CardContent>
             </Card>
 
-            {/* RAL Color */}
+            {/* WPC Color */}
             <Card className="border-white/5">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm">RAL Barva</CardTitle>
+                <CardTitle className="text-sm">WPC WoodCore Barva</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <WpcColorPicker
+                  value={project.wpcProfile}
+                  onChange={(profileId, colorName, hexColor) =>
+                    updateMultiple({
+                      wpcProfile: profileId,
+                      wpcColorName: colorName,
+                    })
+                  }
+                />
+              </CardContent>
+            </Card>
+
+            {/* RAL Color for metal parts */}
+            <Card className="border-white/5">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm">RAL Barva (kovinski deli - stebrički)</CardTitle>
               </CardHeader>
               <CardContent>
                 <RALColorPicker
@@ -437,7 +445,15 @@ export function ProjectDetail({ project, onUpdate, onBack }: ProjectDetailProps)
             )}
           </TabsContent>
 
-          {/* Tab 3: AI Poročilo */}
+          {/* Tab 3: Referenčne fotografije */}
+          <TabsContent value="fotke" className="p-4 space-y-4 m-0">
+            <ReferenceGallery
+              photos={project.referencePhotos || []}
+              onPhotosChange={(photos) => updateField('referencePhotos', photos)}
+            />
+          </TabsContent>
+
+          {/* Tab 4: AI Poročilo */}
           <TabsContent value="ai" className="p-4 space-y-4 m-0">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-sm flex items-center gap-2">
@@ -500,7 +516,7 @@ export function ProjectDetail({ project, onUpdate, onBack }: ProjectDetailProps)
             )}
           </TabsContent>
 
-          {/* Tab 4: Ponudba PDF */}
+          {/* Tab 5: Ponudba PDF */}
           <TabsContent value="pdf" className="p-4 space-y-4 m-0">
             <Card className="border-white/5">
               <CardHeader className="pb-3">
@@ -525,12 +541,12 @@ export function ProjectDetail({ project, onUpdate, onBack }: ProjectDetailProps)
                     <span>{RAILING_STYLES.find((s) => s.id === project.railingStyle)?.name}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Dimenzije</span>
-                    <span>{project.lengthCm}×{project.heightCm}×{project.widthCm} cm</span>
+                    <span className="text-muted-foreground">WPC Barva</span>
+                    <span>{project.wpcColorName}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">RAL</span>
-                    <span>{project.ralColorName || project.ralColor}</span>
+                    <span className="text-muted-foreground">Dimenzije</span>
+                    <span>{project.lengthCm}×{project.heightCm}×{project.widthCm} cm</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Montaža</span>
@@ -546,6 +562,86 @@ export function ProjectDetail({ project, onUpdate, onBack }: ProjectDetailProps)
                 <PdfGenerator project={project} />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Tab 6: Garancijski list */}
+          <TabsContent value="garancija" className="p-4 space-y-4 m-0">
+            <Card className="border-amber-500/20">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-amber-500" />
+                  Garancijski list - {INSTALLATION_SPECS.warrantyYears} let
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-amber-600/10 border border-amber-500/20 rounded-lg p-3">
+                  <p className="text-xs text-amber-300">
+                    ROKSAL WoodCore WPC materiali imajo <strong>{INSTALLATION_SPECS.warrantyYears}-letno garancijo</strong> in
+                    predvideno življenjsko dobo <strong>{INSTALLATION_SPECS.lifespanYears}+ let</strong>.
+                    Garancijski list vsebuje podatke o projektu, materialu in podpise.
+                  </p>
+                </div>
+
+                <div className="space-y-2 text-sm bg-muted/30 rounded-lg p-3">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Stranka</span>
+                    <span>{project.customerName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">WPC Sistem</span>
+                    <span>{RAILING_STYLES.find((s) => s.id === project.railingStyle)?.name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">WPC Barva</span>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full border border-white/20"
+                        style={{ backgroundColor: WPC_COLORS.find((c) => c.id === project.wpcProfile)?.hexColor }}
+                      />
+                      {project.wpcColorName}
+                    </div>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Površina</span>
+                    <span>{breakdown.totalArea.toFixed(2)} m²</span>
+                  </div>
+                </div>
+
+                {project.warrantyIssued ? (
+                  <div className="flex items-center gap-2 bg-green-600/10 border border-green-500/20 rounded-lg p-3">
+                    <Check className="w-5 h-5 text-green-400" />
+                    <div>
+                      <div className="text-sm font-medium text-green-400">Garancijski list izdan</div>
+                      <div className="text-[10px] text-muted-foreground">
+                        Datum: {project.warrantyDate || 'ni podatka'}
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+
+                <Button
+                  onClick={() => setWarrantyOpen(true)}
+                  className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+                >
+                  <Shield className="w-4 h-4 mr-2" />
+                  {project.warrantyIssued ? 'Ponovno generiraj garancijski list' : 'Ustvari garancijski list'}
+                </Button>
+              </CardContent>
+            </Card>
+
+            <WarrantyCertificate
+              open={warrantyOpen}
+              onOpenChange={(open) => {
+                setWarrantyOpen(open);
+                if (!open) {
+                  updateMultiple({
+                    warrantyIssued: true,
+                    warrantyDate: new Date().toISOString().split('T')[0],
+                  });
+                }
+              }}
+              project={project}
+            />
           </TabsContent>
         </ScrollArea>
       </Tabs>

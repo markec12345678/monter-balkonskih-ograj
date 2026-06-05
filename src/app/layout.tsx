@@ -23,7 +23,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: "Monter Ograj PRO",
-  description: "Terenski tablični sistem za montažo balkonskih ograj - ROKSAL",
+  description: "Terenski tablični sistem za montažo WPC WoodCore balkonskih ograj - ROKSAL Kranj",
   manifest: "/manifest.json",
   icons: {
     icon: "/icons/icon-192.png",

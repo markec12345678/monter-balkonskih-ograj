@@ -2,7 +2,7 @@ import { openDB, IDBPDatabase } from 'idb';
 import { Project } from './types';
 
 const DB_NAME = 'monter-ograj-pro';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_NAME = 'projects';
 
 let dbPromise: Promise<IDBPDatabase> | null = null;

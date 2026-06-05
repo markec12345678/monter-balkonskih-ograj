@@ -13,6 +13,14 @@ export function PriceCalculator({ project }: PriceCalculatorProps) {
   const breakdown = calculatePrice(project);
   const style = RAILING_STYLES.find((s) => s.id === project.railingStyle);
 
+  const mountLabel = project.mountType === 'Bočno (V fasado)'
+    ? 'Bočno'
+    : project.mountType === 'Na stopnice'
+    ? 'Stopnice'
+    : project.mountType === 'Vogalni steber'
+    ? 'Vogalni'
+    : 'V tla';
+
   return (
     <Card className="border-amber-500/20 bg-gradient-to-br from-amber-950/20 to-card">
       <CardHeader className="pb-3">
@@ -23,12 +31,16 @@ export function PriceCalculator({ project }: PriceCalculatorProps) {
       </CardHeader>
       <CardContent className="space-y-2 text-sm">
         <div className="flex justify-between text-muted-foreground">
+          <span>Površina</span>
+          <span>{breakdown.totalArea.toFixed(2)} m²</span>
+        </div>
+        <div className="flex justify-between text-muted-foreground">
           <span>Skupaj metrov (z 10% rezervo)</span>
           <span>{breakdown.totalMeters.toFixed(2)} m</span>
         </div>
         <div className="flex justify-between text-muted-foreground">
-          <span>Cena na meter ({style?.name?.split('(')[0]?.trim()})</span>
-          <span>{style?.pricePerMeter ?? 0} €/m</span>
+          <span>Cena na m² ({style?.name?.split('(')[0]?.trim()})</span>
+          <span>{style?.pricePerM2 ?? 0} €/m²</span>
         </div>
         {breakdown.heightMultiplier > 1 && (
           <div className="flex justify-between text-muted-foreground">
@@ -38,11 +50,11 @@ export function PriceCalculator({ project }: PriceCalculatorProps) {
         )}
         <Separator className="my-1" />
         <div className="flex justify-between">
-          <span>Material</span>
+          <span>Material (WPC + ALU)</span>
           <span>{breakdown.baseMaterialCost.toFixed(2)} €</span>
         </div>
         <div className="flex justify-between">
-          <span>Montaža ({project.mountType === 'Bočno (V fasado)' ? 'Bočno' : 'V tla'})</span>
+          <span>Montaža ({mountLabel})</span>
           <span>{breakdown.mountingLabor.toFixed(2)} €</span>
         </div>
         <Separator className="my-1" />

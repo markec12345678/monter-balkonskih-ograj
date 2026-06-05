@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Project, calculatePrice, RAILING_STYLES } from '@/lib/types';
+import { Project, calculatePrice, RAILING_STYLES, WPC_COLORS, WPC_PROFILES, INSTALLATION_SPECS } from '@/lib/types';
 import { RAL_BALCONY_COLORS } from '@/lib/ral-colors';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -26,21 +26,23 @@ export function PdfGenerator({ project }: PdfGeneratorProps) {
     const doc = new jsPDF();
     const breakdown = calculatePrice(project);
     const style = RAILING_STYLES.find((s) => s.id === project.railingStyle);
+    const wpcColor = WPC_COLORS.find((c) => c.id === project.wpcProfile);
+    const wpcProfile = WPC_PROFILES.find((p) => p.id === project.wpcProfile);
     const ralColor = RAL_BALCONY_COLORS.find((c) => c.code === project.ralColor);
     const pageWidth = doc.internal.pageSize.getWidth();
 
     // Header
-    doc.setFillColor(217, 119, 6); // amber-600
+    doc.setFillColor(180, 83, 9); // amber-700
     doc.rect(0, 0, pageWidth, 35, 'F');
 
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
-    doc.text('ROKSAL Balkonske Ograje', 15, 15);
+    doc.text('ROKSAL WoodCore WPC', 15, 15);
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text('Monter Ograj PRO - Terenski tablični sistem', 15, 23);
+    doc.text('Monter Ograj PRO - Ponudba za WPC balkonsko ograjo', 15, 23);
 
     doc.setFontSize(9);
     doc.text(`Ponudba z dne ${formatDateSlovenian(project.createdAt)}`, 15, 30);
@@ -62,22 +64,26 @@ export function PdfGenerator({ project }: PdfGeneratorProps) {
     // Specification table
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('Specifikacija ograje', 15, 80);
+    doc.text('Specifikacija WPC ograje', 15, 80);
 
     autoTable(doc, {
       startY: 85,
       head: [['Parameter', 'Vrednost']],
       body: [
-        ['Sistem', style?.name || project.railingStyle],
+        ['WPC Sistem', style?.name || project.railingStyle],
+        ['WPC Profil', wpcProfile?.name || '/'],
+        ['WPC Barva', wpcColor?.name || project.wpcColorName || '/'],
+        ['Dimenzije profila', wpcProfile?.dimensions || '/'],
         ['Dolžina', `${project.lengthCm} cm`],
         ['Višina', `${project.heightCm} cm`],
         ['Širina', `${project.widthCm} cm`],
+        ['Površina', `${breakdown.totalArea.toFixed(2)} m²`],
         ['Način montaže', project.mountType],
-        ['RAL barva', ralColor ? `RAL ${ralColor.code} - ${ralColor.name}` : project.ralColor],
-        ['Skupaj metrov', `${breakdown.totalMeters.toFixed(2)} m`],
+        ['RAL barva stebričkov', ralColor ? `RAL ${ralColor.code} - ${ralColor.name}` : project.ralColor],
+        ['Garancija', `${INSTALLATION_SPECS.warrantyYears} let`],
       ],
       theme: 'grid',
-      headStyles: { fillColor: [217, 119, 6] },
+      headStyles: { fillColor: [180, 83, 9] },
       margin: { left: 15, right: 15 },
     });
 
@@ -91,7 +97,7 @@ export function PdfGenerator({ project }: PdfGeneratorProps) {
       startY: priceStartY + 15,
       head: [['Postavka', 'Znesek']],
       body: [
-        ['Material', `${breakdown.baseMaterialCost.toFixed(2)} €`],
+        ['Material (WPC + ALU)', `${breakdown.baseMaterialCost.toFixed(2)} €`],
         ['Montaža', `${breakdown.mountingLabor.toFixed(2)} €`],
         ['Vmesna vsota', `${breakdown.subtotal.toFixed(2)} €`],
         ...(project.discount > 0
@@ -102,7 +108,7 @@ export function PdfGenerator({ project }: PdfGeneratorProps) {
         ['SKUPAJ Z DDV', `${breakdown.totalWithVat.toFixed(2)} €`],
       ],
       theme: 'grid',
-      headStyles: { fillColor: [217, 119, 6] },
+      headStyles: { fillColor: [180, 83, 9] },
       margin: { left: 15, right: 15 },
       didParseCell: (data) => {
         if (data.row.index === (project.discount > 0 ? 6 : 5)) {
@@ -126,11 +132,12 @@ export function PdfGenerator({ project }: PdfGeneratorProps) {
     }
 
     // Footer
-    const footerY = doc.internal.pageSize.getHeight() - 20;
+    const footerY = doc.internal.pageSize.getHeight() - 25;
     doc.setFontSize(8);
     doc.setTextColor(128, 128, 128);
     doc.text('Ponudba velja 30 dni. Popravki rezervirani.', 15, footerY);
-    doc.text('ROKSAL Balkonske Ograje | Monter Ograj PRO', 15, footerY + 5);
+    doc.text(`ROKSAL d.o.o. | Savska Loka 21, 4000 Kranj | ${INSTALLATION_SPECS.warrantyYears}-letna garancija`, 15, footerY + 5);
+    doc.text('Monter Ograj PRO - WPC WoodCore', 15, footerY + 10);
 
     // Add photo if available
     if (project.photoBase64) {
@@ -145,7 +152,7 @@ export function PdfGenerator({ project }: PdfGeneratorProps) {
       }
     }
 
-    doc.save(`ponudba-${project.customerName?.replace(/\s+/g, '-').toLowerCase() || 'ograja'}.pdf`);
+    doc.save(`ponudba-wpc-${project.customerName?.replace(/\s+/g, '-').toLowerCase() || 'ograja'}.pdf`);
   };
 
   return (
