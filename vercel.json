@@ -1,0 +1,6 @@
+{
+  "buildCommand": "next build --webpack",
+  "framework": "nextjs",
+  "installCommand": "npm install && node -e \"const fs=require('fs'),p='node_modules/nanoid/non-secure/';if(fs.existsSync(p)&&!fs.existsSync(p+'index.cjs')){const s=fs.readFileSync(p+'index.js','utf8').replace(/export \\{/g,'module.exports = {');fs.writeFileSync(p+'index.cjs','\\'use strict\\'\\n'+s);console.log('Created nanoid CJS wrapper')}\"",
+  "outputDirectory": ".next"
+}
