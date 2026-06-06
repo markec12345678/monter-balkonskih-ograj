@@ -6,8 +6,8 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   reactStrictMode: false,
-  turbopack: {},
   serverExternalPackages: ['pako', 'iobuffer'],
+  transpilePackages: ['nanoid', 'yet-another-react-lightbox', 'react-photo-album'],
 };
 
 export default nextConfig;
