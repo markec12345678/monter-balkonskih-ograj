@@ -10,6 +10,8 @@
     "postinstall": "node -e \"const fs=require('fs'),p='node_modules/nanoid/non-secure/';if(fs.existsSync(p)&&!fs.existsSync(p+'index.cjs')){const s=fs.readFileSync(p+'index.js','utf8').replace(/export \\{/g,'module.exports = {');fs.writeFileSync(p+'index.cjs','\\'use strict\\'\\n'+s);console.log('Created nanoid CJS wrapper')}\""
   },
   "dependencies": {
+    "@buildvisionai/construction-calculators": "^1.0.2",
+    "@dansreis/react-canvas-annotator": "^1.0.5-alpha",
     "@hookform/resolvers": "^5.1.1",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -77,6 +79,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/node": "25.9.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-signature-canvas": "^1.0.7",

@@ -12,7 +12,7 @@ import { ProjectDetail } from '@/components/project-detail';
 import { RoksalCatalog } from '@/components/roksal-catalog';
 import { SubcontractorForm } from '@/components/subcontractor-form';
 import { InstallationManual } from '@/components/installation-manual';
-import { MaterialCalculator } from '@/components/material-calculator';
+import { MaterialCalculator, ConcreteCalculator, ProfitCalculator, FenceCalculator } from '@/components/material-calculator';
 import { QuickQuote } from '@/components/quick-quote';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -195,7 +195,14 @@ export default function HomePage() {
           ) : (
             <ScrollArea className="flex-1">
               <div className="p-3">
-                {rightPanel === 'material' && <MaterialCalculator />}
+                {rightPanel === 'material' && (
+                  <div className="space-y-3">
+                    <MaterialCalculator />
+                    <FenceCalculator />
+                    <ConcreteCalculator />
+                    <ProfitCalculator />
+                  </div>
+                )}
                 {rightPanel === 'quickquote' && <QuickQuote />}
               </div>
             </ScrollArea>
