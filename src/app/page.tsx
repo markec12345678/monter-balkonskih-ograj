@@ -17,6 +17,7 @@ import { QuickQuote } from '@/components/quick-quote';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { SerwistProvider } from '@/components/serwist-provider';
 import {
   BookOpen,
   UserPlus,
@@ -95,6 +96,7 @@ export default function HomePage() {
   }
 
   return (
+    <SerwistProvider>
     <div className="h-screen flex flex-col bg-background">
       {/* Top bar */}
       <header className="flex items-center gap-2 px-3 py-2 border-b border-white/5 bg-card/50 backdrop-blur-sm">
@@ -261,5 +263,6 @@ export default function HomePage() {
       <SubcontractorForm open={subcontractorOpen} onOpenChange={setSubcontractorOpen} />
       <InstallationManual open={manualOpen} onOpenChange={setManualOpen} />
     </div>
+    </SerwistProvider>
   );
 }

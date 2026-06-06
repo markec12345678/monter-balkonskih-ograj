@@ -14,7 +14,7 @@ import {
   Loader2,
   Download,
   Eye,
-  Template,
+  LayoutTemplate,
 } from 'lucide-react';
 
 interface PdfGeneratorProps {
@@ -388,7 +388,7 @@ export function PdfGenerator({ project }: PdfGeneratorProps) {
         <Card className="border-amber-500/20 bg-amber-950/10">
           <CardContent className="p-3">
             <div className="flex items-start gap-2">
-              <Template className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+              <LayoutTemplate className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
               <div className="text-xs text-amber-200/80 space-y-1">
                 <p><strong>pdfme</strong> uporablja predlogo (template) za generiranje PDF-ja. Predlogo je mogoče vizualno urejati s pdfme Designer orodjem.</p>
                 <p className="text-muted-foreground">Predloga: ROKSAL A4 Ponudba (template-based, profesionalen izgled)</p>
