@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { calculateConcrete, calculateMarkup, calculateFence } from '@buildvisionai/construction-calculators';
 import {
   Calculator,
   Ruler,
@@ -16,11 +16,10 @@ import {
   ArrowRight,
   AlertTriangle,
   ShoppingCart,
-  Construction,
-  Droplets,
-  BarChart3,
+  Cuboid,
+  DollarSign,
+  Fence,
 } from 'lucide-react';
-import { calculateFence, calculateConcrete, calculateMarkup, type FenceInput, type ConcreteInput } from '@buildvisionai/construction-calculators';
 
 interface MaterialItem {
   name: string;
@@ -426,283 +425,331 @@ export function MaterialCalculator() {
   );
 }
 
-// ─── Beton Kalkulator (construction-calculators) ────────────────────────
-
 export function ConcreteCalculator() {
   const [shape, setShape] = useState<'rectangular' | 'circular'>('rectangular');
-  const [lengthM, setLengthM] = useState(3);
-  const [widthM, setWidthM] = useState(0.3);
-  const [depthM, setDepthM] = useState(0.5);
-  const [radiusM, setRadiusM] = useState(0.15);
+  const [length, setLength] = useState(5);
+  const [width, setWidth] = useState(3);
+  const [radius, setRadius] = useState(2);
+  const [depth, setDepth] = useState(0.15);
+  const [units, setUnits] = useState<'metric' | 'imperial'>('metric');
 
   const result = useMemo(() => {
-    const input: ConcreteInput = {
-      shape,
-      length: shape === 'rectangular' ? lengthM : undefined,
-      width: shape === 'rectangular' ? widthM : undefined,
-      radius: shape === 'circular' ? radiusM : undefined,
-      depth: depthM,
-      units: 'metric',
-    };
-    return calculateConcrete(input);
-  }, [shape, lengthM, widthM, depthM, radiusM]);
+    if (depth <= 0) return null;
+    if (shape === 'rectangular' && (!length || length <= 0 || !width || width <= 0)) return null;
+    if (shape === 'circular' && (!radius || radius <= 0)) return null;
+    return calculateConcrete({ shape, length, width, radius, depth, units });
+  }, [shape, length, width, radius, depth, units]);
 
   return (
     <Card className="border-blue-500/20">
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm flex items-center gap-2">
-          <Droplets className="w-4 h-4 text-blue-400" />
-          Beton kalkulator
-          <Badge variant="outline" className="text-[8px] ml-1">BuildVision AI</Badge>
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Cuboid className="w-4 h-4 text-blue-500" />
+            Beton kalkulator
+          </CardTitle>
+          <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-blue-500/30 text-blue-400">
+            BuildVision AI
+          </Badge>
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="flex gap-1.5">
-          {(['rectangular', 'circular'] as const).map((s) => (
-            <button
-              key={s}
-              onClick={() => setShape(s)}
-              className={`flex-1 py-1.5 rounded text-[10px] font-medium transition-colors ${
-                shape === s ? 'bg-blue-600 text-white' : 'bg-muted text-muted-foreground'
-              }`}
-            >
-              {s === 'rectangular' ? 'Pravokotnik' : 'Krožni'}
-            </button>
-          ))}
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <Label className="text-[10px] text-muted-foreground">Oblika</Label>
+            <div className="flex gap-1 mt-1">
+              {(['rectangular', 'circular'] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setShape(s)}
+                  className={`flex-1 py-1.5 rounded text-[10px] font-medium transition-colors ${
+                    shape === s ? 'bg-blue-600 text-white' : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {s === 'rectangular' ? 'Pravokotna' : 'Krožna'}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <Label className="text-[10px] text-muted-foreground">Enote</Label>
+            <div className="flex gap-1 mt-1">
+              {(['metric', 'imperial'] as const).map((u) => (
+                <button
+                  key={u}
+                  onClick={() => setUnits(u)}
+                  className={`flex-1 py-1.5 rounded text-[10px] font-medium transition-colors ${
+                    units === u ? 'bg-blue-600 text-white' : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {u === 'metric' ? 'Metric' : 'Imperial'}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
-          {shape === 'rectangular' ? (
+        <div className={`grid ${shape === 'rectangular' ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}>
+          {shape === 'rectangular' && (
             <>
               <div>
-                <Label className="text-xs">Dolžina (m)</Label>
-                <Input type="number" step="0.1" value={lengthM || ''} onChange={(e) => setLengthM(parseFloat(e.target.value) || 0)} className="h-8 mt-1 text-xs" />
+                <Label className="text-[10px] text-muted-foreground">Dolžina ({units === 'metric' ? 'm' : 'ft'})</Label>
+                <Input type="number" value={length || ''} onChange={(e) => setLength(parseFloat(e.target.value) || 0)} className="h-8 mt-1 text-xs" />
               </div>
               <div>
-                <Label className="text-xs">Širina (m)</Label>
-                <Input type="number" step="0.1" value={widthM || ''} onChange={(e) => setWidthM(parseFloat(e.target.value) || 0)} className="h-8 mt-1 text-xs" />
+                <Label className="text-[10px] text-muted-foreground">Širina ({units === 'metric' ? 'm' : 'ft'})</Label>
+                <Input type="number" value={width || ''} onChange={(e) => setWidth(parseFloat(e.target.value) || 0)} className="h-8 mt-1 text-xs" />
               </div>
             </>
-          ) : (
+          )}
+          {shape === 'circular' && (
             <div>
-              <Label className="text-xs">Polmer (m)</Label>
-              <Input type="number" step="0.1" value={radiusM || ''} onChange={(e) => setRadiusM(parseFloat(e.target.value) || 0)} className="h-8 mt-1 text-xs" />
+              <Label className="text-[10px] text-muted-foreground">Radij ({units === 'metric' ? 'm' : 'ft'})</Label>
+              <Input type="number" value={radius || ''} onChange={(e) => setRadius(parseFloat(e.target.value) || 0)} className="h-8 mt-1 text-xs" />
             </div>
           )}
           <div>
-            <Label className="text-xs">Globina (m)</Label>
-            <Input type="number" step="0.1" value={depthM || ''} onChange={(e) => setDepthM(parseFloat(e.target.value) || 0)} className="h-8 mt-1 text-xs" />
+            <Label className="text-[10px] text-muted-foreground">Globina ({units === 'metric' ? 'm' : 'ft'})</Label>
+            <Input type="number" value={depth || ''} onChange={(e) => setDepth(parseFloat(e.target.value) || 0)} className="h-8 mt-1 text-xs" step="0.01" />
           </div>
         </div>
 
-        <div className="bg-muted/30 rounded-lg p-2.5 space-y-1.5 text-xs">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Prostornina</span>
-            <span className="font-medium">{result.volumeCuM.toFixed(3)} m³ ({result.volumeCuFt.toFixed(1)} ft³)</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Vreče betona (40kg)</span>
-            <span className="font-bold text-blue-400">{result.bagsNeeded} kos</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Pesek</span>
-            <span>{result.sand.toFixed(2)} m³</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Gramoz</span>
-            <span>{result.gravel.toFixed(2)} m³</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Voda</span>
-            <span>{result.water.toFixed(1)} L</span>
-          </div>
-        </div>
-
-        <div className="text-[10px] text-muted-foreground bg-blue-950/20 rounded p-2">
-          💡 Uporaba: Izračunajte beton za sidranje stebričkov v tla. Ena jamica ~30×30×50cm = 0.045m³ ≈ 4 vreče.
-        </div>
+        {result && (
+          <>
+            <Separator />
+            <div className="bg-blue-950/20 rounded-lg p-2.5 space-y-1.5">
+              <div className="text-[10px] font-semibold text-blue-400 mb-1.5">Rezultati</div>
+              <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[10px]">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Prostornina</span>
+                  <span className="font-medium">{result.volumeCuM.toFixed(3)} m³</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Prostornina</span>
+                  <span className="font-medium">{result.volumeCuFt.toFixed(2)} ft³</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Vrečke cementa</span>
+                  <span className="font-medium text-blue-300">{result.bagsNeeded.toFixed(0)} kos</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Pesek</span>
+                  <span className="font-medium">{result.sand.toFixed(1)} kg</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Gramoz</span>
+                  <span className="font-medium">{result.gravel.toFixed(1)} kg</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Voda</span>
+                  <span className="font-medium">{result.water.toFixed(1)} L</span>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );
 }
 
-// ─── Profit Kalkulator (markup calculator) ──────────────────────────────
-
 export function ProfitCalculator() {
-  const [costs, setCosts] = useState(2500);
-  const [markupPercent, setMarkupPercent] = useState(30);
+  const [costs, setCosts] = useState(1000);
+  const [markupPercent, setMarkupPercent] = useState(20);
 
-  const markupResult = useMemo(() => {
+  const result = useMemo(() => {
+    if (costs <= 0 || markupPercent < 0) return null;
     return calculateMarkup({ costs, markupPercent });
   }, [costs, markupPercent]);
 
   return (
     <Card className="border-green-500/20">
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-green-400" />
-          Profit kalkulator
-          <Badge variant="outline" className="text-[8px] ml-1">BuildVision AI</Badge>
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <DollarSign className="w-4 h-4 text-green-500" />
+            Profit kalkulator
+          </CardTitle>
+          <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-green-500/30 text-green-400">
+            BuildVision AI
+          </Badge>
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <Label className="text-xs">Stroški (€)</Label>
+            <Label className="text-[10px] text-muted-foreground">Stroški (€)</Label>
             <Input type="number" value={costs || ''} onChange={(e) => setCosts(parseFloat(e.target.value) || 0)} className="h-8 mt-1 text-xs" />
           </div>
           <div>
-            <Label className="text-xs">Pribitek (%)</Label>
-            <Input type="number" value={markupPercent || ''} onChange={(e) => setMarkupPercent(parseFloat(e.target.value) || 0)} className="h-8 mt-1 text-xs" />
+            <Label className="text-[10px] text-muted-foreground">Pribitek (%)</Label>
+            <Input type="number" value={markupPercent || ''} onChange={(e) => setMarkupPercent(parseFloat(e.target.value) || 0)} className="h-8 mt-1 text-xs" step="0.5" />
           </div>
         </div>
 
-        <div className="bg-muted/30 rounded-lg p-2.5 space-y-1.5 text-xs">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Prodajna cena</span>
-            <span className="font-bold text-green-400 text-sm">{markupResult.totalWithMarkup.toFixed(2)} €</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Dobiček</span>
-            <span className="font-medium text-green-300">{markupResult.profit.toFixed(2)} €</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Profitna marža</span>
-            <span className="font-medium">{markupResult.profitMarginPercent.toFixed(1)}%</span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-4 gap-1">
-          {[15, 25, 35, 50].map((p) => (
-            <button
-              key={p}
-              onClick={() => setMarkupPercent(p)}
-              className={`py-1 rounded text-[10px] font-medium transition-colors ${
-                markupPercent === p ? 'bg-green-600 text-white' : 'bg-muted text-muted-foreground'
-              }`}
-            >
-              {p}%
-            </button>
-          ))}
-        </div>
+        {result && (
+          <>
+            <Separator />
+            <div className="bg-green-950/20 rounded-lg p-2.5 space-y-2">
+              <div className="text-[10px] font-semibold text-green-400">Rezultati</div>
+              <div className="grid grid-cols-1 gap-1.5 text-[10px]">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Skupaj s pribitkom</span>
+                  <span className="font-bold text-green-300">{result.totalWithMarkup.toFixed(2)} €</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Dobiček</span>
+                  <span className="font-medium">{result.profit.toFixed(2)} €</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Marža</span>
+                  <span className="font-medium">{result.profitMarginPercent.toFixed(1)}%</span>
+                </div>
+              </div>
+              {result.profitMarginPercent > 30 && (
+                <div className="bg-green-900/30 border border-green-500/20 rounded p-1.5 text-[9px] text-green-300">
+                  ✓ Zdrava marža nad 30%
+                </div>
+              )}
+              {result.profitMarginPercent < 10 && result.profitMarginPercent > 0 && (
+                <div className="bg-red-900/30 border border-red-500/20 rounded p-1.5 text-[9px] text-red-300">
+                  ⚠ Nizka marža pod 10%
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );
 }
 
-// ─── Ograjni Kalkulator (fence calculator - BuildVision) ────────────────
-
 export function FenceCalculator() {
-  const [linearM, setLinearM] = useState(6);
-  const [heightM, setHeightM] = useState(1.1);
-  const [postSpacingM, setPostSpacingM] = useState(1.5);
-  const [gates, setGates] = useState(0);
-  const [fenceType, setFenceType] = useState<FenceInput['fenceType']>('wood');
+  const [linearLength, setLinearLength] = useState(30);
+  const [postSpacing, setPostSpacing] = useState(2.4);
+  const [height, setHeight] = useState(1.8);
+  const [gates, setGates] = useState(1);
+  const [fenceType, setFenceType] = useState<'wood' | 'vinyl' | 'chain_link' | 'aluminum' | 'split_rail'>('wood');
+  const [units, setUnits] = useState<'metric' | 'imperial'>('metric');
 
-  const fenceResult = useMemo(() => {
-    const input: FenceInput = {
-      linearLength: linearM,
-      postSpacing: postSpacingM,
-      height: heightM,
-      gates,
-      fenceType,
-      units: 'metric',
-    };
-    return calculateFence(input);
-  }, [linearM, heightM, postSpacingM, gates, fenceType]);
+  const result = useMemo(() => {
+    if (linearLength <= 0 || postSpacing <= 0 || height <= 0) return null;
+    return calculateFence({ linearLength, postSpacing, height, gates, fenceType, units });
+  }, [linearLength, postSpacing, height, gates, fenceType, units]);
 
-  const fenceTypes: Record<string, string> = {
-    wood: 'Les (WPC)',
+  const fenceTypeLabels: Record<string, string> = {
+    wood: 'Les',
     vinyl: 'Vinil',
     chain_link: 'Pletivo',
     aluminum: 'Aluminij',
-    split_rail: 'Lesena ograda',
+    split_rail: 'Loč. ograja',
   };
 
   return (
-    <Card className="border-amber-500/20">
+    <Card className="border-amber-700/30">
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm flex items-center gap-2">
-          <Construction className="w-4 h-4 text-amber-500" />
-          Ograjni kalkulator
-          <Badge variant="outline" className="text-[8px] ml-1">BuildVision AI</Badge>
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Fence className="w-4 h-4 text-amber-600" />
+            Ograjni kalkulator
+          </CardTitle>
+          <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-amber-600/30 text-amber-500">
+            BuildVision AI
+          </Badge>
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <Label className="text-xs">Dolžina (m)</Label>
-            <Input type="number" step="0.5" value={linearM || ''} onChange={(e) => setLinearM(parseFloat(e.target.value) || 0)} className="h-8 mt-1 text-xs" />
+            <Label className="text-[10px] text-muted-foreground">Tip ograje</Label>
+            <div className="grid grid-cols-3 gap-1 mt-1">
+              {(['wood', 'vinyl', 'chain_link', 'aluminum', 'split_rail'] as const).map((ft) => (
+                <button
+                  key={ft}
+                  onClick={() => setFenceType(ft)}
+                  className={`py-1 rounded text-[9px] font-medium transition-colors ${
+                    fenceType === ft ? 'bg-amber-700 text-white' : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {fenceTypeLabels[ft]}
+                </button>
+              ))}
+            </div>
           </div>
           <div>
-            <Label className="text-xs">Višina (m)</Label>
-            <Input type="number" step="0.1" value={heightM || ''} onChange={(e) => setHeightM(parseFloat(e.target.value) || 0)} className="h-8 mt-1 text-xs" />
+            <Label className="text-[10px] text-muted-foreground">Enote</Label>
+            <div className="flex gap-1 mt-1">
+              {(['metric', 'imperial'] as const).map((u) => (
+                <button
+                  key={u}
+                  onClick={() => setUnits(u)}
+                  className={`flex-1 py-1.5 rounded text-[10px] font-medium transition-colors ${
+                    units === u ? 'bg-amber-700 text-white' : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {u === 'metric' ? 'Metric' : 'Imperial'}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <Label className="text-xs">Razmik stebričkov (m)</Label>
-            <Input type="number" step="0.1" value={postSpacingM || ''} onChange={(e) => setPostSpacingM(parseFloat(e.target.value) || 0)} className="h-8 mt-1 text-xs" />
+            <Label className="text-[10px] text-muted-foreground">Dolžina ({units === 'metric' ? 'm' : 'ft'})</Label>
+            <Input type="number" value={linearLength || ''} onChange={(e) => setLinearLength(parseFloat(e.target.value) || 0)} className="h-8 mt-1 text-xs" />
           </div>
           <div>
-            <Label className="text-xs">Vrata</Label>
+            <Label className="text-[10px] text-muted-foreground">Razmik stebrov ({units === 'metric' ? 'm' : 'ft'})</Label>
+            <Input type="number" value={postSpacing || ''} onChange={(e) => setPostSpacing(parseFloat(e.target.value) || 0)} className="h-8 mt-1 text-xs" step="0.1" />
+          </div>
+          <div>
+            <Label className="text-[10px] text-muted-foreground">Višina ({units === 'metric' ? 'm' : 'ft'})</Label>
+            <Input type="number" value={height || ''} onChange={(e) => setHeight(parseFloat(e.target.value) || 0)} className="h-8 mt-1 text-xs" step="0.1" />
+          </div>
+          <div>
+            <Label className="text-[10px] text-muted-foreground">Vrata</Label>
             <Input type="number" value={gates} onChange={(e) => setGates(parseInt(e.target.value) || 0)} className="h-8 mt-1 text-xs" min={0} />
           </div>
         </div>
 
-        <div>
-          <Label className="text-xs">Tip ograje</Label>
-          <div className="grid grid-cols-5 gap-1 mt-1">
-            {Object.entries(fenceTypes).map(([key, label]) => (
-              <button
-                key={key}
-                onClick={() => setFenceType(key as typeof fenceType)}
-                className={`py-1.5 rounded text-[8px] font-medium transition-colors ${
-                  fenceType === key ? 'bg-amber-600 text-white' : 'bg-muted text-muted-foreground'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-muted/30 rounded-lg p-2.5 space-y-1.5 text-xs">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Stebrički</span>
-            <span className="font-bold">{fenceResult.posts} kos</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Vodila (rails)</span>
-            <span>{fenceResult.rails} kos</span>
-          </div>
-          {fenceResult.pickets > 0 && (
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Letve (pickets)</span>
-              <span>{fenceResult.pickets} kos</span>
+        {result && (
+          <>
+            <Separator />
+            <div className="bg-amber-950/20 rounded-lg p-2.5 space-y-1.5">
+              <div className="text-[10px] font-semibold text-amber-500 mb-1.5">Rezultati</div>
+              <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[10px]">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Stebri</span>
+                  <span className="font-medium">{result.posts} kos</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Vodila</span>
+                  <span className="font-medium">{result.rails} kos</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Deske</span>
+                  <span className="font-medium">{result.pickets} kos</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Paneli</span>
+                  <span className="font-medium">{result.panels} kos</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Vrečke betona</span>
+                  <span className="font-medium">{result.concreteBags} kos</span>
+                </div>
+              </div>
+              <Separator className="my-1" />
+              <div className="flex justify-between text-[10px]">
+                <span className="text-muted-foreground">Cena (ocena)</span>
+                <span className="font-bold text-amber-400">
+                  {result.costMin.toFixed(0)} – {result.costMax.toFixed(0)} {units === 'metric' ? '€' : '$'}
+                </span>
+              </div>
             </div>
-          )}
-          {fenceResult.panels > 0 && (
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Paneli</span>
-              <span>{fenceResult.panels} kos</span>
-            </div>
-          )}
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Vreče betona</span>
-            <span>{fenceResult.concreteBags} kos</span>
-          </div>
-          <Separator />
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Cena (min)</span>
-            <span className="text-amber-400">{fenceResult.costMin.toFixed(0)} €</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Cena (max)</span>
-            <span className="text-amber-400 font-bold">{fenceResult.costMax.toFixed(0)} €</span>
-          </div>
-        </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );

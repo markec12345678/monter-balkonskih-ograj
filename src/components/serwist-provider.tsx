@@ -17,45 +17,25 @@ export function SerwistProvider({ children }: { children: React.ReactNode }) {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // Register serwist service worker
     if ('serviceWorker' in navigator) {
-      const registerSW = async () => {
+      (async () => {
         try {
-          // Use @serwist/window for better integration
           const { Serwist } = await import('@serwist/window');
-          const sw = new Serwist('/sw.js', {
-            scope: '/',
-            type: 'classic',
-          });
-
-          sw.addEventListener('activated', (event) => {
-            console.log('[Serwist] Activated:', event);
-            setSwRegistered(true);
-          });
-
-          sw.addEventListener('waiting', () => {
-            console.log('[Serwist] New version waiting');
-            setUpdateAvailable(true);
-          });
-
+          const sw = new Serwist('/sw.js', { scope: '/', type: 'classic' });
+          sw.addEventListener('activated', () => setSwRegistered(true));
+          sw.addEventListener('waiting', () => setUpdateAvailable(true));
           await sw.register();
           setSwRegistered(true);
-        } catch (err) {
-          // Fallback to basic service worker registration
-          console.log('[SW] Serwist window failed, using basic registration:', err);
+        } catch {
           try {
             const reg = await navigator.serviceWorker.register('/sw.js');
             setSwRegistered(true);
-            reg.addEventListener('updatefound', () => {
-              setUpdateAvailable(true);
-            });
+            reg.addEventListener('updatefound', () => setUpdateAvailable(true));
           } catch (e) {
             console.error('[SW] Registration failed:', e);
           }
         }
-      };
-
-      registerSW();
+      })();
     }
 
     return () => {
@@ -67,9 +47,7 @@ export function SerwistProvider({ children }: { children: React.ReactNode }) {
   const handleUpdate = () => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistration().then((reg) => {
-        if (reg?.waiting) {
-          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-        }
+        if (reg?.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
       });
       window.location.reload();
     }
@@ -78,7 +56,6 @@ export function SerwistProvider({ children }: { children: React.ReactNode }) {
   return (
     <>
       {children}
-      {/* Online/Offline indicator */}
       <div className="fixed bottom-2 left-2 z-50">
         {!isOnline && (
           <Badge variant="outline" className="bg-red-950/80 border-red-500/30 text-red-400 text-[9px]">
